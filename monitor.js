@@ -80,6 +80,8 @@ async function checkSeats() {
     const data = await fetchWithRetry(API_URL);
     const target = data?.courses?.find((c) => c.courseId === TARGET_COURSE_ID);
 
+    console.log(data, "response");
+
     const accounting = data?.courses?.find(
       (c) => c.courseId === TARGET_COURSE_ACC
     );
