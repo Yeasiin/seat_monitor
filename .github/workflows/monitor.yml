@@ -2,7 +2,7 @@ name: Seat Monitor
 
 on:
   schedule:
-    - cron: "*/2 * * * *" # run every 5 minutes
+    - cron: "*/2 * * * *" # run every 2 minutes
   workflow_dispatch: # allows manual trigger
 
 jobs:
@@ -11,19 +11,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Install Bun
-      - name: Setup Bun
-        run: curl -fsSL https://bun.sh/install | bash
-
-      # Add Bun to PATH
-      - name: Add Bun to PATH
-        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      # Setup Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
 
       # Install dependencies
-      - run: bun install axios dotenv
+      - run: npm install axios dotenv
 
       # Run monitor script
-      - run: bun run monitor.js
+      - run: node monitor.js
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
