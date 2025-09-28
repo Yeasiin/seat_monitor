@@ -7,6 +7,8 @@ const reg = process.env.REG;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 const TARGET_COURSE_ID = "2681"; // Management
+const TARGET_COURSE_ACC = "2581"; // Accounting
+const SUPER_ALERT_THRESHOLD = 150;
 
 const API_URL = `http://app7.nu.edu.bd/nu-web/msapplication/privatePreliEligibleCollegeCourses?honsRoll=${roll}&honsRegno=${reg}&honsPassingYear=2022&collegeCode=4306&gender=M&honsDegreeName=Degree+Pass`;
 
@@ -78,26 +80,33 @@ async function checkSeats() {
     const data = await fetchWithRetry(API_URL);
     const target = data?.courses?.find((c) => c.courseId === TARGET_COURSE_ID);
 
+    const accounting = data?.courses?.find(
+      (c) => c.courseId === TARGET_COURSE_ACC
+    );
+
     if (!target) {
       await sendTelegram(`⚠️ Target course not found in API response.`);
       return;
     }
 
+    const accounting_available = parseInt(accounting.availableSeats, 10) || 0;
     const available = parseInt(target.availableSeats, 10) || 0;
 
     if (available > 0) {
-      if (!alerted) {
-        await sendTelegram(
-          `🎉 Seats available for ${target.courseName}! (${available} left)`
-        );
-        alerted = true;
-        console.log(`✅ Alert sent: ${target.courseName} (${available} seats)`);
-      } else {
-        console.log(`✅ Seats available, already alerted`);
-      }
+      await sendTelegram(
+        `🎉 Seats available for ${target.courseName}! (${available} left)`
+      );
+      console.log(`✅ Alert sent: ${target.courseName} (${available} seats)`);
     } else {
-      alerted = false; // reset alert when no seats
       console.log(`❌ No seats yet for ${target.courseName}`);
+    }
+    if (accounting_available <= SUPER_ALERT_THRESHOLD) {
+      await sendTelegram(
+        `💣💣💣 Accounting Seat are also now very low ! (${accounting_available} left)`
+      );
+      console.log(
+        `✅ Alert sent: ${accounting.courseName} (${accounting_available} seats)`
+      );
     }
   } catch (error) {
     console.error("🚨 Monitor error:", error.message || error);
