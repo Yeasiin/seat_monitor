@@ -1,0 +1,22 @@
+name: NU Seat Monitor
+
+on:
+  schedule:
+    - cron: "*/2 * * * *" # run every 5 minutes
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  check-seats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - run: npm install axios
+      - run: node monitor.js
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          ROLL: ${{ secrets.ROLL }}
+          REG: ${{ secrets.REG }}
