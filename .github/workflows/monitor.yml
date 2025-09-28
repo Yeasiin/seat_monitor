@@ -1,4 +1,4 @@
-name: NU Seat Monitor
+name: Seat Monitor
 
 on:
   schedule:
@@ -10,11 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-      - run: npm install axios
-      - run: node monitor.js
+
+      # Install Bun
+      - name: Setup Bun
+        run: curl -fsSL https://bun.sh/install | bash
+
+      # Add Bun to PATH
+      - name: Add Bun to PATH
+        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      # Install dependencies
+      - run: bun install axios dotenv
+
+      # Run monitor script
+      - run: bun run monitor.js
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
